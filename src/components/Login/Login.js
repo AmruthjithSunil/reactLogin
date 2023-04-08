@@ -1,8 +1,10 @@
-import React, { useEffect, useReducer, useState } from "react";
+import React, { useContext, useEffect, useReducer, useState } from "react";
 
 import Card from "../UI/Card/Card";
 import classes from "./Login.module.css";
 import Button from "../UI/Button/Button";
+import AuthContext from "../../store/auth-context";
+import Input from "../UI/Input/Input";
 
 const emailReducer = (state, action) => {
   if (action.type === "USER_INPUT") {
@@ -39,6 +41,23 @@ const Login = (props) => {
     isValid: null,
   });
 
+  const authCtx = useContext(AuthContext);
+
+  const { isValid: emailIsValid } = emailState;
+  const { isValid: passwordIsValid } = passwordState;
+
+  useEffect(() => {
+    const identifier = setTimeout(() => {
+      console.log("Checking form validity!");
+      setFormIsValid(emailIsValid && passwordIsValid);
+    }, 500);
+
+    return () => {
+      console.log("CLEANUP");
+      clearTimeout(identifier);
+    };
+  }, [emailIsValid, passwordIsValid]);
+
   const emailChangeHandler = (event) => {
     dispatchEmail({ type: "USER_INPUT", val: event.target.value });
 
@@ -46,7 +65,6 @@ const Login = (props) => {
       passwordState.isValid && emailState.isValid //&&
       //enteredCollege.trim().length > 0
     );
-    console.log(emailState);
   };
 
   const collegeChangeHandler = (event) => {
@@ -60,7 +78,6 @@ const Login = (props) => {
       passwordState.isValid && emailState.isValid //&&
       //enteredCollege.trim().length > 0
     );
-    console.log(passwordState);
   };
 
   const validateEmailHandler = () => {
@@ -73,12 +90,11 @@ const Login = (props) => {
 
   const validatePasswordHandler = () => {
     dispatchPassword({ type: "INPUT_BLUR" });
-    console.log(formIsValid);
   };
 
   const submitHandler = (event) => {
     event.preventDefault();
-    props.onLogin(emailState.value, passwordState.value);
+    authCtx.onLogin(emailState.value, passwordState.value);
   };
 
   return (
@@ -90,7 +106,7 @@ const Login = (props) => {
           }`}
         >
           <label htmlFor="email">E-Mail</label>
-          <input
+          <Input
             type="email"
             id="email"
             value={emailState.value}
@@ -104,7 +120,7 @@ const Login = (props) => {
           }`}
         >
           <label htmlFor="college">College</label>
-          <input
+          <Input
             type="text"
             id="college"
             value={enteredCollege}
